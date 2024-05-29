@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-integration
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: devops-integration
+  template:
+    metadata:
+      labels:
+        app: devops-integration
+    spec:
+      containers:
+      - name: devops-integration
+        image: shoib/devops-integration
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/orderease"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "avnadmin"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "password"
+        ports:
+        - containerPort: 5454
