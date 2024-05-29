@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-integration-service
+spec:
+  selector:
+    app: devops-integration
+  ports:
+  - port: 5454
+    targetPort: 5454
+  type: ClusterIP
