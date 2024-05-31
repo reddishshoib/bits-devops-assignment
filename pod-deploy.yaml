@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: devops-pod
+  labels:
+    app: devops-app
+    role: frontend
+spec:
+  containers:
+  - name: mysql
+    image: mysql:latest
+    env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: "root"
+    - name: MYSQL_DATABASE
+      value: "orderease"
+    - name: MYSQL_USER
+      value: "avnadmin"
+    - name: MYSQL_PASSWORD
+      value: "password"
+    ports:
+    - containerPort: 3306
+    volumeMounts:
+    - name: mysql-storage
+      mountPath: /var/lib/mysql
+  - name: devops-integration
+    image: shoib/devops-integration
+    env:
+    - name: SPRING_DATASOURCE_URL
+      value: "jdbc:mysql://localhost:3306/orderease"
+    - name: SPRING_DATASOURCE_USERNAME
+      value: "avnadmin"
+    - name: SPRING_DATASOURCE_PASSWORD
+      value: "password"
+    ports:
+    - containerPort: 5454
+  - name: devops-frontend
+    image: shoib/devops-frontend:1.0
+    ports:
+    - containerPort: 80
+  volumes:
+  - name: mysql-storage
+    persistentVolumeClaim:
+      claimName: mysql-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-frontend-service
+spec:
+  selector:
+    app: devops-app
+    role: frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: NodePort
